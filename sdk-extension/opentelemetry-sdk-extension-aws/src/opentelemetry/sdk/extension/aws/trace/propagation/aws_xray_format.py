@@ -39,7 +39,7 @@ class AWSXRayFormat(TextMapPropagator):
     TRACE_HEADER_KEY = "X-Amzn-Trace-Id"
 
     KV_PAIR_DELIMITER = ";"
-    KEY_AND_VALUE_DELIMITER = "-"
+    KEY_AND_VALUE_DELIMITER = "="
 
     TRACE_ID_KEY = "Root"
     TRACE_ID_LENGTH = 35
