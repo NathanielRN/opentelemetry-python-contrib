@@ -32,7 +32,7 @@ _logger = logging.getLogger(__name__)
 class AWSXRayFormat(TextMapPropagator):
     """Propagator for the AWS X-Ray Trace Header propagation protocol.
 
-    See: https://https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader
+    See: https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader
     """
 
     # AWS
@@ -113,7 +113,7 @@ class AWSXRayFormat(TextMapPropagator):
                     _logger.error("Invalid ParentId in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.".format(self.TRACE_HEADER_KEY, trace_header))
                     return trace.INVALID_SPAN_CONTEXT
 
-                span_id = value
+                span_id = int(value, 16)
             elif stripped_kv_pair.startswith(self.SAMPLED_FLAG_KEY):
                 is_sampled_flag_valid = True
 
