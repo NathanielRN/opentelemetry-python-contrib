@@ -179,7 +179,7 @@ class AWSXRayFormat(TextMapPropagator):
             otel_trace_id[self.TRACE_ID_FIRST_PART_LENGTH:]
         )
 
-        parent_id = "{:032x}".format(span_context.span_id)
+        parent_id = "{:016x}".format(span_context.span_id)
 
         sampling_flag = self.IS_SAMPLED if span_context.trace_flags & trace.TraceFlags.SAMPLED else self.NOT_SAMPLED
 
