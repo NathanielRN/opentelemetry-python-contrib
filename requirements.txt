@@ -1,0 +1,3 @@
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@master#egg=venv-opentelemetry-api&subdirectory=opentelemetry-api
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@master#egg=venv-opentelemetry-sdk&subdirectory=opentelemetry-sdk
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@master#egg=venv-opentelemetry-tests&subdirectory=tests/util
