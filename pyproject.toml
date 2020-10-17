@@ -4,6 +4,7 @@ exclude = '''
 (
   /(
     reference # original files from DataDog
+    exporter/opentelemetry-exporter-jaeger/src/opentelemetry/exporter/jaeger/gen|
   )/
 )
 '''
