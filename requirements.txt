@@ -1,0 +1,4 @@
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@937863f8294d6347e131eaaedbc1b877598b13d9#egg=skiptargetinstall-opentelemetry-api&subdirectory=opentelemetry-api
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@937863f8294d6347e131eaaedbc1b877598b13d9#egg=skiptargetinstall-opentelemetry-sdk&subdirectory=opentelemetry-sdk
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@937863f8294d6347e131eaaedbc1b877598b13d9#egg=skiptargetinstall-opentelemetry-tests&subdirectory=tests/util
+-e git+https://github.com/open-telemetry/opentelemetry-python.git@937863f8294d6347e131eaaedbc1b877598b13d9#egg=skiptargetinstall-opentelemetry-instrumentation&subdirectory=opentelemetry-instrumentation

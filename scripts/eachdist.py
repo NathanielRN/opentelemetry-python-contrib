@@ -263,7 +263,11 @@ def find_targets_unordered(rootpath):
     for subdir in rootpath.iterdir():
         if not subdir.is_dir():
             continue
-        if subdir.name.startswith(".") or subdir.name.startswith("venv"):
+        if (
+            subdir.name.startswith(".") or 
+            subdir.name.startswith("venv") or 
+            subdir.name.startswith("skiptargetinstall-")
+        ):
             continue
         if any(
             (subdir / marker).exists()
