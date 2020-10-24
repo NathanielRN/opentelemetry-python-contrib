@@ -1,10 +1,16 @@
-name: Test
+name: Contrib Repo Tests
 
 on:
   push:
     branches-ignore:
     - 'release/*'
   pull_request:
+  # workflow_dispatch:
+  #   inputs:
+  #     core_sha:
+  #       description: 'Core repository SHA'
+  #       required: true
+  #       default: 51ed4576c611316bd3f74d213501f5ffa3e2a5ca
 
 jobs:
   build:
@@ -20,18 +26,9 @@ jobs:
       fail-fast: false  # ensures the entire test matrix is run, even if one permutation fails
       matrix:
         python-version: [ py35, py36, py37, py38, pypy3 ]
-        package: ["instrumentation", "core", "exporter"]
+        package: ["instrumentation", "exporter"]
         os: [ ubuntu-latest ]
         include:
-          - python-version: py38
-            package: "tracecontext"
-            os: ubuntu-latest
-          - python-version: py38
-            package: "mypy"
-            os: ubuntu-latest
-          - python-version: py38
-            package: "mypyinstalled"
-            os: ubuntu-latest
           # py35-instrumentation segfaults on 18.04 so we instead run on 20.04
           - python-version: py35
             package: instrumentation
@@ -41,7 +38,15 @@ jobs:
             python-version: py35
             package: instrumentation
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Contrib Repo at SHA - ${{ github.sha }}
+        uses: actions/checkout@v2
+      - name: Checkout Core Repo at requested (or default) fork and branch
+        uses: actions/checkout@v2
+        with:
+          repository: open-telemetry/opentelemetry-python
+          # ref: ${{ github.event.inputs.core_sha }}
+          ref: 51ed4576c611316bd3f74d213501f5ffa3e2a5ca
+          path: opentelemetry-python-core
       - name: Set up Python ${{ env[matrix.python-version] }}
         uses: actions/setup-python@v2
         with:
@@ -60,11 +65,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tox-environment: [ "docker-tests", "lint", "docs" ]
+        tox-environment: [ "docker-tests", "lint" ]
     name: ${{ matrix.tox-environment }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Contrib Repo at SHA - ${{ github.sha }}
+        uses: actions/checkout@v2
+      - name: Checkout Core Repo at requested (or default) fork and branch
+        uses: actions/checkout@v2
+        with:
+          repository: open-telemetry/opentelemetry-python
+          # ref: ${{ github.event.inputs.core_sha }}
+          ref: 51ed4576c611316bd3f74d213501f5ffa3e2a5ca
+          path: opentelemetry-python-core
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
