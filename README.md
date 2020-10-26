@@ -32,3 +32,14 @@ mv instrumentation/opentelemetry-instrumentation-jinja2/version.py instrumentati
 
 5. Fix relative import paths to using ddtrace package instead of using relative paths
 6. Update the code and tests to use the OpenTelemetry API
+
+# Running Tests
+
+1. Create a virtual env in your Contrib repo directory. `python3 -m venv my_test_venv`.
+2. Activate your virtual env. `source my_test_env/bin/activate`.
+3. Clone the [OpenTelemetry Python](https://github.com/open-telemetry/opentelemetry-python) Python Core repo to a folder named `opentelemetry-python-core`. `git clone git@github.com:open-telemetry/opentelemetry-python.git opentelemetry-python-core`.
+4. Change directory to the repo that was just cloned. `cd opentelemetry-python`.
+5. Move the head of this repo to the hash you want your tests to use. This is currently `51ed4576c611316bd3f74d213501f5ffa3e2a5ca` as seen in `.github/workflows/test.yml`. Use `git checkout 51ed4576c611316bd3f74d213501f5ffa3e2a5ca`.
+6. Go back to the root directory. `cd ../`.
+7. Make sure you have `tox` installed. `pip install tox`.
+8. Run tests for a package. (e.g. `tox -e test-instrumentation-flask`.)
