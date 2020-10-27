@@ -28,7 +28,7 @@ from opentelemetry.trace.propagation.textmap import (
 _logger = logging.getLogger(__name__)
 
 
-class AWSXRayFormat(TextMapPropagator):
+class AwsXRayFormat(TextMapPropagator):
     """Propagator for the AWS X-Ray Trace Header propagation protocol.
 
     See: https://docs.aws.amazon.com/xray/latest/devguide/xray-concepts.html#xray-concepts-tracingheader
@@ -62,13 +62,21 @@ class AWSXRayFormat(TextMapPropagator):
         carrier: TextMapPropagatorT,
         context: typing.Optional[Context] = None,
     ) -> Context:
-        if not carrier:
-            raise ValueError(("Could not extract from carrier: %s", carrier))
+        trace_header_list = get_from_carrier(carrier, self.TRACE_HEADER_KEY)
 
-        trace_header = get_from_carrier(carrier, self.TRACE_HEADER_KEY)
+        if not trace_header_list or len(trace_header_list) != 1:
+            return trace.set_span_in_context(
+                trace.INVALID_SPAN,
+                context=context
+            )
 
-        if not trace_header or trace_header == '':
-            return trace.set_span_in_context(trace.INVALID_SPAN)
+        trace_header = trace_header_list[0]
+
+        if not trace_header:
+            return trace.set_span_in_context(
+                trace.INVALID_SPAN,
+                context=context
+            )
 
         trace_id = trace.INVALID_TRACE_ID
         span_id = trace.INVALID_SPAN_ID
@@ -91,7 +99,10 @@ class AWSXRayFormat(TextMapPropagator):
                 key_and_value_delimiter_index = stripped_kv_pair.index(self.KEY_AND_VALUE_DELIMITER)
             except ValueError as _:
                 _logger.error(("Error parsing X-Ray trace header. Invalid key value pair: %s. Returning INVALID span context.", kv_pair_subset))
-                return trace.set_span_in_context(trace.INVALID_SPAN)
+                return trace.set_span_in_context(
+                    trace.INVALID_SPAN,
+                    context=context
+                )
 
             value = stripped_kv_pair[key_and_value_delimiter_index + 1:]
 
@@ -101,17 +112,37 @@ class AWSXRayFormat(TextMapPropagator):
                     value[self.TRACE_ID_DELIMITER_INDEX_1] != self.TRACE_ID_DELIMITER or
                     value[self.TRACE_ID_DELIMITER_INDEX_2] != self.TRACE_ID_DELIMITER):
                     _logger.error(("Invalid TraceId in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.", self.TRACE_HEADER_KEY, trace_header))
-                    return trace.INVALID_SPAN_CONTEXT
+                    return trace.set_span_in_context(
+                        trace.INVALID_SPAN,
+                        context=context
+                    )
 
                 timestamp_subset = value[self.TRACE_ID_DELIMITER_INDEX_1 + 1: self.TRACE_ID_DELIMITER_INDEX_2]
                 unique_id_subset = value[self.TRACE_ID_DELIMITER_INDEX_2 + 1: self.TRACE_ID_LENGTH]
-                trace_id = int(timestamp_subset + unique_id_subset, 16)
+                try:
+                    trace_id = int(timestamp_subset + unique_id_subset, 16)
+                except ValueError as _:
+                    _logger.error(("Invalid TraceId in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.", self.TRACE_HEADER_KEY, trace_header))
+                    return trace.set_span_in_context(
+                        trace.INVALID_SPAN,
+                        context=context
+                    )
             elif stripped_kv_pair.startswith(self.PARENT_ID_KEY):
                 if len(value) != self.PARENT_ID_LENGTH:
                     _logger.error(("Invalid ParentId in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.", self.TRACE_HEADER_KEY, trace_header))
-                    return trace.INVALID_SPAN_CONTEXT
+                    return trace.set_span_in_context(
+                        trace.INVALID_SPAN,
+                        context=context
+                    )
 
-                span_id = int(value, 16)
+                try:
+                    span_id = int(value, 16)
+                except ValueError as _:
+                    _logger.error(("Invalid TraceId in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.", self.TRACE_HEADER_KEY, trace_header))
+                    return trace.set_span_in_context(
+                        trace.INVALID_SPAN,
+                        context=context
+                    )
             elif stripped_kv_pair.startswith(self.SAMPLED_FLAG_KEY):
                 is_sampled_flag_valid = True
 
@@ -129,7 +160,10 @@ class AWSXRayFormat(TextMapPropagator):
 
                 if not is_sampled_flag_valid:
                     _logger.error(("Invalid Sampling flag in X-Ray trace header: '%s' with value '%s'. Returning INVALID span context.", self.TRACE_HEADER_KEY, trace_header))
-                    return trace.INVALID_SPAN_CONTEXT
+                    return trace.set_span_in_context(
+                        trace.INVALID_SPAN,
+                        context=context
+                    )
 
         options = 0
         if sampled:
@@ -144,7 +178,11 @@ class AWSXRayFormat(TextMapPropagator):
         )
 
         if not span_context.is_valid:
-            return context
+            _logger.error("Invalid Span Extracted. Insertting INVALID span into provided context.")
+            return trace.set_span_in_context(
+                trace.INVALID_SPAN,
+                context=context
+            )
 
         return trace.set_span_in_context(
             trace.DefaultSpan(
@@ -159,12 +197,9 @@ class AWSXRayFormat(TextMapPropagator):
         carrier: TextMapPropagatorT,
         context: typing.Optional[Context] = None,
     ) -> None:
-        if not carrier:
-            raise ValueError(("Could not extract from carrier: %s", carrier))
-
         span = trace.get_current_span(context=context)
 
-        span_context = span.get_context()
+        span_context = span.get_span_context()
         if not span_context.is_valid:
             return
 

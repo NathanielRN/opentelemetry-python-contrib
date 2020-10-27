@@ -36,9 +36,9 @@ class AwsXRayIdsGeneratorTest(unittest.TestCase):
         for _ in range(1_000):
             trace_id = ids_generator.generate_trace_id()
             trace_id_time = trace_id >> 96
-            current_time = int(datetime.datetime.now().timestamp())
-            self.assertLess(trace_id_time, current_time)
+            current_time = int(datetime.datetime.utcnow().timestamp())
+            self.assertLessEqual(trace_id_time, current_time)
             one_month_ago_time = int(
-                datetime.datetime.now() - datetime.timedelta(30)
+                (datetime.datetime.utcnow() - datetime.timedelta(30)).timestamp()
             )
             self.assertGreater(trace_id_time, one_month_ago_time)

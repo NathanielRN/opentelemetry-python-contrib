@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from opentelemetry.sdk.extension.aws.trace.aws_xray_ids_generator import (
-    AWSXRayIdsGenerator,
+    AwsXRayIdsGenerator,
 )
 
-__all__ = ["AWSXRayIdsGenerator"]
+__all__ = ["AwsXRayIdsGenerator"]
